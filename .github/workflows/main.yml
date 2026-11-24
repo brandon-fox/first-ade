@@ -131,8 +131,12 @@ jobs:
             fi
             
             if [ "$sig_status" != "G" ] && [ "$sig_status" != "U" ] && [ "$has_gpgsig" != "true" ]; then
-              echo "FAIL: Commit $commit is not signed or has an invalid signature!"
-              exit 1
+              if [ "$EVENT_NAME" = "pull_request" ] || [ "$EVENT_NAME" = "merge_group" ]; then
+                echo "::warning::Commit $commit is unsigned (PR mode; signed squash/merge required on main)."
+              else
+                echo "FAIL: Commit $commit is not signed or has an invalid signature!"
+                exit 1
+              fi
             fi
           done
-          echo "All commits have valid signatures."
+          echo "Commit signature check complete."
