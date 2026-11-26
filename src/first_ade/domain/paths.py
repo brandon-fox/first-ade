@@ -1,5 +1,3 @@
-# implements: FR-001
-# traces_to: Π.3.1
 """Pure-Python POSIX path normalization and glob matching."""
 
 from __future__ import annotations

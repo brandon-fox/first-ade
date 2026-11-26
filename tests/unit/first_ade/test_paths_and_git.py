@@ -47,3 +47,22 @@ def test_git_adapter_missing_origin_main_fallback(tmp_path: Path) -> None:
     changes, notes = adapter.get_changed_files(tmp_path, base_ref="origin/main")
     assert any(get_empty_tree_hash(tmp_path) in n for n in notes)
     assert any(c.path == "README.md" for c in changes)
+
+
+def test_git_adapter_missing_origin_main_falls_back_to_head_tilde_1(tmp_path: Path) -> None:
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=tmp_path, check=True, capture_output=True)
+
+    (tmp_path / "a.txt").write_text("v1\n", encoding="utf-8")
+    subprocess.run(["git", "add", "a.txt"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "c1"], cwd=tmp_path, check=True, capture_output=True)
+
+    (tmp_path / "b.txt").write_text("v2\n", encoding="utf-8")
+    subprocess.run(["git", "add", "b.txt"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "c2"], cwd=tmp_path, check=True, capture_output=True)
+
+    adapter = SubprocessGitAdapter()
+    changes, notes = adapter.get_changed_files(tmp_path, base_ref="origin/main")
+    assert any("HEAD~1" in n for n in notes)
+    assert any(c.path == "b.txt" for c in changes)

@@ -1,5 +1,3 @@
-# implements: FR-001
-# traces_to: Π.3.1
 """import-linter adapter for ADE-AX-02 Hexagonal Domain Purity."""
 
 from __future__ import annotations
@@ -63,7 +61,10 @@ class SubprocessImportLinterAdapter:
         )
         if proc.returncode != 0:
             output = (proc.stdout + "\n" + proc.stderr).strip()
-            summary = next((ln.strip() for ln in output.splitlines() if "BROKEN" in ln or "->" in ln), "Hexagonal import boundary violated")
+            summary = next(
+                (ln.strip() for ln in output.splitlines() if "BROKEN" in ln or "->" in ln),
+                "Hexagonal import boundary violated",
+            )
             return [
                 Violation(
                     axiom_id=config.id,

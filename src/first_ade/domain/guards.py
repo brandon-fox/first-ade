@@ -1,5 +1,3 @@
-# implements: FR-001
-# traces_to: Π.3.1
 """Pure domain guard evaluators: TamperGuard, ScopeGuard, CouplingGuard."""
 
 from __future__ import annotations
@@ -44,7 +42,10 @@ def evaluate_tamper_guard(
                         file=path,
                         line=1,
                         reason=f"Agent mode cannot modify protected guardrail path '{path}'",
-                        fix_hint="Revert changes to protected constitutional files or request human review in --mode human.",
+                        fix_hint=(
+                            "Revert changes to protected constitutional files or "
+                            "request human review in --mode human."
+                        ),
                     )
                 )
     return violations

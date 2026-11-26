@@ -72,12 +72,31 @@ def test_positive_small_unscoped_bugfix(tmp_path: Path) -> None:
 
 def test_positive_human_mode_axioms_update_with_test(tmp_path: Path) -> None:
     repo = _init_clean_repo(tmp_path, with_scope=False)
-    (repo / ".first-ade" / "axioms.yaml").write_text(
-        (repo / ".first-ade" / "axioms.yaml").read_text(encoding="utf-8").replace("unscoped_max_files: 3", "unscoped_max_files: 4"),
-        encoding="utf-8",
+    axioms_file = repo / ".first-ade" / "axioms.yaml"
+    updated = axioms_file.read_text(encoding="utf-8").replace(
+        "unscoped_max_files: 3", "unscoped_max_files: 4"
     )
+    axioms_file.write_text(updated, encoding="utf-8")
     (repo / "tests" / "test_ok.py").write_text("def test_ok(): assert True\n", encoding="utf-8")
     runner = CliRunner()
     res = runner.invoke(main, ["check", "--mode", "human", "--repo-root", str(repo)])
     assert res.exit_code == 0, res.output
     assert "warning:" not in res.output
+
+
+def test_positive_unscoped_over_3_files_emits_warning_not_block(tmp_path: Path) -> None:
+    repo = _init_clean_repo(tmp_path, with_scope=False)
+    for idx in range(4):
+        (repo / "src" / "first_ade" / "adapters" / f"f{idx}.py").write_text(f"X = {idx}\n", encoding="utf-8")
+    runner = CliRunner()
+    res = runner.invoke(main, ["check", "--mode", "agent", "--repo-root", str(repo)])
+    assert res.exit_code == 0, res.output
+    assert "warning:" in res.output
+    assert "[ADE-SCOPE]" in res.output
+
+
+def test_positive_stop_hook_clean_repo(tmp_path: Path) -> None:
+    repo = _init_clean_repo(tmp_path, with_scope=False)
+    runner = CliRunner()
+    res = runner.invoke(main, ["hook", "--repo-root", str(repo)], input='{"hook_event_name": "Stop"}')
+    assert res.exit_code == 0, res.output

@@ -139,3 +139,100 @@ def test_negative_missing_cue_binary_fails_closed(tmp_path: Path, monkeypatch: p
     res = runner.invoke(main, ["check", "--mode", "human", "--repo-root", str(repo)])
     assert res.exit_code == 2
     assert "[ADE-CUE]" in res.output
+
+
+def test_negative_first_ade_agent_env_var(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = _init_fixture_repo(tmp_path)
+    (repo / ".first-ade" / "axioms.yaml").write_text(
+        (repo / ".first-ade" / "axioms.yaml").read_text(encoding="utf-8") + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("FIRST_ADE_AGENT", "1")
+    runner = CliRunner()
+    res = runner.invoke(main, ["check", "--repo-root", str(repo)])
+    assert res.exit_code == 2
+    assert "[ADE-AX-01]" in res.output
+
+
+def test_negative_rename_out_of_allowed_paths(tmp_path: Path) -> None:
+    repo = _init_fixture_repo(tmp_path, with_scope=True)
+    subprocess.run(
+        ["git", "mv", "src/first_ade/adapters/helper.py", "rogue_outside.py"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+    runner = CliRunner()
+    res = runner.invoke(main, ["check", "--mode", "agent", "--repo-root", str(repo)])
+    assert res.exit_code == 2
+    assert "[ADE-SCOPE]" in res.output
+
+
+def test_negative_ast_grep_eval_and_exec(tmp_path: Path) -> None:
+    repo = _init_fixture_repo(tmp_path)
+    (repo / "src" / "first_ade" / "adapters" / "unsafe_dyn.py").write_text(
+        'x = eval("1 + 1")\nexec("y = 2")\n',
+        encoding="utf-8",
+    )
+    runner = CliRunner()
+    res = runner.invoke(main, ["check", "--mode", "human", "--repo-root", str(repo)])
+    assert res.exit_code == 2
+    assert res.output.count("[ADE-AX-04]") >= 2
+
+
+def test_negative_stop_hook_blocks_dirty_repo(tmp_path: Path) -> None:
+    repo = _init_fixture_repo(tmp_path)
+    (repo / ".first-ade" / "axioms.yaml").write_text(
+        (repo / ".first-ade" / "axioms.yaml").read_text(encoding="utf-8") + "\n",
+        encoding="utf-8",
+    )
+    runner = CliRunner()
+    res = runner.invoke(main, ["hook", "--repo-root", str(repo)], input='{"hook_event_name": "Stop"}')
+    assert res.exit_code == 2
+    assert "[ADE-AX-01]" in res.output
+
+
+def test_negative_sarif_dual_surface_parity(tmp_path: Path) -> None:
+    import gzip
+    import json
+
+    repo = _init_fixture_repo(tmp_path)
+    (repo / ".first-ade" / "axioms.yaml").write_text(
+        (repo / ".first-ade" / "axioms.yaml").read_text(encoding="utf-8") + "\n",
+        encoding="utf-8",
+    )
+    sarif_file = tmp_path / "results.sarif"
+    receipt_file = tmp_path / "receipt.md"
+    runner = CliRunner()
+
+    term_res = runner.invoke(main, ["check", "--mode", "agent", "--repo-root", str(repo)])
+    sarif_res = runner.invoke(
+        main,
+        [
+            "check",
+            "--mode",
+            "agent",
+            "--format",
+            "sarif",
+            "--output",
+            str(sarif_file),
+            "--receipt",
+            str(receipt_file),
+            "--repo-root",
+            str(repo),
+        ],
+    )
+    assert term_res.exit_code == 2
+    assert sarif_res.exit_code == 2
+
+    sarif = json.loads(sarif_file.read_text(encoding="utf-8"))
+    assert sarif["version"] == "2.1.0"
+    assert sarif["$schema"] == "https://json.schemastore.org/sarif-2.1.0.json"
+    results = sarif["runs"][0]["results"]
+    assert len(results) >= 1
+    assert any(r["ruleId"] == "ADE-AX-01" for r in results)
+    for r in results:
+        assert r["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
+        assert r["partialFingerprints"]["primaryLocationLineHash"]
+    assert len(gzip.compress(sarif_file.read_bytes())) <= 10 * 1024 * 1024
+    assert "First-ADE Run Receipt (FAIL)" in receipt_file.read_text(encoding="utf-8")

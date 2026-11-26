@@ -1,5 +1,3 @@
-# implements: FR-001
-# traces_to: Π.3.1
 """CUE schema validation adapter."""
 
 from __future__ import annotations
@@ -40,14 +38,16 @@ class SubprocessCueAdapter:
             errors="replace",
         )
         if proc.returncode != 0:
-            err_msg = (proc.stderr or proc.stdout).strip().splitlines()[0] if (proc.stderr or proc.stdout).strip() else "CUE validation failed"
+            raw_err = (proc.stderr or proc.stdout).strip()
+            err_msg = raw_err.splitlines()[0] if raw_err else "CUE validation failed"
+            rel_schema = normalize_repo_path(str(schema_path.relative_to(repo_root)))
             return [
                 Violation(
                     axiom_id="ADE-CUE",
                     file=rel_data,
                     line=1,
                     reason=f"Schema validation failed: {err_msg}",
-                    fix_hint=f"Fix {rel_data} to conform to {normalize_repo_path(str(schema_path.relative_to(repo_root)))}.",
+                    fix_hint=f"Fix {rel_data} to conform to {rel_schema}.",
                 )
             ]
         return []

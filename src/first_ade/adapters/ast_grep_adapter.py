@@ -1,5 +1,3 @@
-# implements: FR-001
-# traces_to: Π.3.1
 """ast-grep adapter for ADE-AX-04 Execution Safety Hygiene."""
 
 from __future__ import annotations
@@ -28,7 +26,10 @@ class SubprocessAstGrepAdapter:
                     file=config.rules_dir,
                     line=1,
                     reason="Required 'ast-grep' (sg) binary not found on PATH",
-                    fix_hint="Install ast-grep (e.g., `winget install ast-grep.ast-grep` or `pip install ast-grep-cli`).",
+                    fix_hint=(
+                        "Install ast-grep (e.g., `winget install ast-grep.ast-grep` "
+                        "or `pip install ast-grep-cli`)."
+                    ),
                 )
             ]
 

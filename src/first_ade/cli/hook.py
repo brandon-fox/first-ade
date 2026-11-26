@@ -1,5 +1,3 @@
-# implements: FR-001
-# traces_to: Π.3.1
 """Fail-closed Claude Code PreToolUse / Stop hook handler."""
 
 from __future__ import annotations

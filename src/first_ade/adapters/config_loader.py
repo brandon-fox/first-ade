@@ -1,5 +1,3 @@
-# implements: FR-001
-# traces_to: Π.3.1
 """Binary lookup helper and YAML config loader."""
 
 from __future__ import annotations
