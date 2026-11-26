@@ -1,0 +1,5 @@
+pre-commit:
+  parallel: true
+  commands:
+    first-ade:
+      run: uv run first-ade check --staged

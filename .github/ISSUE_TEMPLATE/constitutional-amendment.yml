@@ -1,0 +1,30 @@
+name: Constitutional Amendment
+description: Propose a human-reviewed change to .first-ade/axioms.yaml or .first-ade/schemas/
+title: "[CONSTITUTION] "
+labels: ["constitutional-amendment", "human-review-required"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Constitutional files (`.first-ade/axioms.yaml`, `.first-ade/schemas/**`) are protected by `ADE-AX-01` and require human sovereignty (`ADE-AX-06`).
+  - type: input
+    id: axiom_id
+    attributes:
+      label: Target Axiom ID
+      placeholder: "e.g. ADE-AX-05"
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Architectural Rationale
+      description: Explain why this invariant is being added, modified, or waived.
+    validations:
+      required: true
+  - type: textarea
+    id: paired_tests
+    attributes:
+      label: Paired Guardrail Acceptance Tests
+      description: Describe the negative (exit 2) and positive (exit 0) fixtures in tests/guardrails/.
+    validations:
+      required: true

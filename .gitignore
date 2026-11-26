@@ -35,6 +35,7 @@ build/
 
 # Project specific
 .ade_compliance/
+.import_linter_cache/
 docs/decisions/index.md
 *.lock
 *.py.lock

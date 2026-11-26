@@ -1,0 +1,22 @@
+id: ade-ax-04-no-shell-true
+language: python
+severity: error
+message: "[ADE-AX-04] Forbidden shell=True in subprocess call; pass an explicit argument list without shell=True."
+rule:
+  pattern:
+    context: "f(shell=True)"
+    selector: keyword_argument
+---
+id: ade-ax-04-no-eval
+language: python
+severity: error
+message: "[ADE-AX-04] Forbidden eval() call; use ast.literal_eval or explicit parsing."
+rule:
+  pattern: eval($$$ARGS)
+---
+id: ade-ax-04-no-exec
+language: python
+severity: error
+message: "[ADE-AX-04] Forbidden exec() call; dynamic code execution is prohibited."
+rule:
+  pattern: exec($$$ARGS)
