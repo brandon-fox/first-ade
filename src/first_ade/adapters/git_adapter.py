@@ -10,7 +10,13 @@ from pathlib import Path
 from first_ade.domain.models import FileChange
 from first_ade.domain.paths import normalize_repo_path
 
-EMPTY_TREE_HASH = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"  # pragma: allowlist secret
+
+def get_empty_tree_hash(repo_root: Path) -> str:
+    """Compute the repository's empty tree object hash dynamically via Git."""
+    proc = _run_git(repo_root, ["hash-object", "-t", "tree", "/dev/null"])
+    if proc.returncode != 0 or not proc.stdout.strip():
+        raise RuntimeError(f"Failed to compute empty tree hash: {proc.stderr.strip()}")
+    return proc.stdout.strip()
 
 
 def _run_git(repo_root: Path, args: list[str]) -> subprocess.CompletedProcess[str]:
@@ -69,10 +75,11 @@ class SubprocessGitAdapter:
                 notes.append(f"Base ref '{resolved_ref}' not found; fell back to 'HEAD~1'.")
                 resolved_ref = "HEAD~1"
             else:
+                empty_tree = get_empty_tree_hash(repo_root)
                 notes.append(
-                    f"Base ref '{resolved_ref}' and 'HEAD~1' not found; fell back to empty tree '{EMPTY_TREE_HASH}'."
+                    f"Base ref '{resolved_ref}' and 'HEAD~1' not found; fell back to empty tree '{empty_tree}'."
                 )
-                resolved_ref = EMPTY_TREE_HASH
+                resolved_ref = empty_tree
 
         diff_args = ["diff", "--name-status", "-M", resolved_ref]
         proc = _run_git(repo_root, diff_args)

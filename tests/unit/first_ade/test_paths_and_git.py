@@ -5,7 +5,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-from first_ade.adapters.git_adapter import EMPTY_TREE_HASH, SubprocessGitAdapter, parse_name_status_lines
+from first_ade.adapters.git_adapter import SubprocessGitAdapter, get_empty_tree_hash, parse_name_status_lines
 from first_ade.domain.paths import matches_glob, normalize_repo_path
 
 
@@ -45,5 +45,5 @@ def test_git_adapter_missing_origin_main_fallback(tmp_path: Path) -> None:
 
     adapter = SubprocessGitAdapter()
     changes, notes = adapter.get_changed_files(tmp_path, base_ref="origin/main")
-    assert any(EMPTY_TREE_HASH in n for n in notes)
+    assert any(get_empty_tree_hash(tmp_path) in n for n in notes)
     assert any(c.path == "README.md" for c in changes)
