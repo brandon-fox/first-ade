@@ -25,7 +25,3 @@ uv run first-ade check --base origin/main
 | **ADE-AX-02** | Hexagonal Domain Purity | Enforces via `import-linter` that `first_ade.domain` and `first_ade.ports` have zero imports from `first_ade.adapters` or `first_ade.cli` |
 | **ADE-AX-03** | Paired Test Coupling | Requires edits to `src/first_ade/domain/**`, `src/first_ade/guards/**`, or `.first-ade/schemas/**` to include a paired edit under `tests/**` |
 | **ADE-AX-04** | Execution Safety Hygiene | Enforces via `ast-grep` zero `shell=True`, `eval(`, or `exec(` in `src/first_ade/**` |
-
-## Deprecations
-
-Legacy `ade-compliance` (FastAPI/SQLite/Alembic server, `web-portal`, `cli/remediate.py`, and multi-file prose `specs/`) has been deprecated and removed in favor of First-ADE v0.1. See [DEPRECATIONS.md](DEPRECATIONS.md).
