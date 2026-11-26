@@ -1,0 +1,19 @@
+language: "en-US"
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  auto_review:
+    enabled: true
+    drafts: false
+  path_instructions:
+    - path: ".first-ade/**"
+      instructions: "Advisory check only: verify CUE schema alignment and human sovereignty. Bot approval never satisfies merge requirements."
+    - path: "src/first_ade/domain/**"
+      instructions: "Verify zero imports from adapters or cli (ADE-AX-02 hexagonal purity)."
+    - path: "tests/guardrails/**"
+      instructions: "Flag any weakened assertions or removed negative fixtures."
+chat:
+  auto_reply: true

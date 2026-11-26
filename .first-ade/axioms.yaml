@@ -1,0 +1,40 @@
+version: "0.1"
+project: "first-ade"
+unscoped_max_files: 3
+
+tamper_guard:
+  id: "ADE-AX-01"
+  enabled: true
+  protected_paths:
+    - ".first-ade/axioms.yaml"
+    - ".first-ade/schemas/**"
+    - ".github/workflows/**"
+    - ".lefthook.yml"
+    - ".pre-commit-config.yaml"
+    - "tests/guardrails/**"
+
+boundary_guard:
+  id: "ADE-AX-02"
+  enabled: true
+  engine: "import-linter"
+  config: ".importlinter"
+
+coupling_guard:
+  id: "ADE-AX-03"
+  enabled: true
+  rules:
+    - name: "guards-and-schemas-require-tests"
+      if_changed:
+        - "src/first_ade/domain/**"
+        - "src/first_ade/guards/**"
+        - ".first-ade/schemas/**"
+      then_require:
+        - "tests/**"
+
+ast_guard:
+  id: "ADE-AX-04"
+  enabled: true
+  engine: "ast-grep"
+  rules_dir: ".first-ade/rules"
+  target_paths:
+    - "src/first_ade"

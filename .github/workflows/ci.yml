@@ -1,0 +1,104 @@
+name: First-ADE v0.1 CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  first-ade-guardrails:
+    name: First-ADE Deterministic Guardrails & SARIF
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Install CUE & ast-grep
+        run: |
+          curl -sSL https://github.com/cue-lang/cue/releases/download/v0.11.0/cue_v0.11.0_linux_amd64.tar.gz | tar -xz -C /usr/local/bin cue
+          uv tool install ast-grep-cli
+
+      - name: Install project dependencies
+        run: uv sync --extra dev
+
+      - name: Run first-ade check & emit SARIF
+        run: |
+          uv run first-ade check --base origin/main --format sarif --output results.sarif --receipt run-receipt.md
+
+      - name: Upload SARIF to GitHub Code Scanning
+        if: always() && hashFiles('results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+
+  test-and-license-check:
+    name: Guardrail Tests & Clean-Core License Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Install CUE & ast-grep
+        run: |
+          curl -sSL https://github.com/cue-lang/cue/releases/download/v0.11.0/cue_v0.11.0_linux_amd64.tar.gz | tar -xz -C /usr/local/bin cue
+          uv tool install ast-grep-cli
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Run unit & two-sided guardrail suite
+        run: uv run pytest tests/unit/first_ade tests/guardrails -v
+
+      - name: Clean-Core License Contamination Check
+        run: |
+          uv run python -c "
+          import importlib.metadata as md, sys
+          forbidden = ('GPL', 'AGPL', 'SSPL', 'BSL')
+          bad = []
+          for dist in md.distributions():
+              lic = (dist.metadata.get('License') or '') + ' ' + (dist.metadata.get('License-Expression') or '')
+              up = lic.upper()
+              if any(tok in up for tok in forbidden) and 'LGPL' not in up:
+                  bad.append((dist.metadata['Name'], lic.strip()))
+          if bad:
+              print('Forbidden copyleft dependencies found:', bad, file=sys.stderr)
+              sys.exit(2)
+          print('Clean-Core license check passed: 0 GPL/AGPL/SSPL/BSL dependencies.')
+          "
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: python
+      - uses: github/codeql-action/analyze@v3

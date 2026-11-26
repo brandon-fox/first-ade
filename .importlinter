@@ -1,0 +1,12 @@
+[importlinter]
+root_package = first_ade
+
+[importlinter:contract:hexagonal-domain-purity]
+name = ADE-AX-02 Hexagonal Domain Purity
+type = forbidden
+source_modules =
+    first_ade.domain
+    first_ade.ports
+forbidden_modules =
+    first_ade.adapters
+    first_ade.cli
