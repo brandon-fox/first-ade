@@ -10,7 +10,7 @@ from pathlib import Path
 from first_ade.domain.models import FileChange
 from first_ade.domain.paths import normalize_repo_path
 
-EMPTY_TREE_HASH = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+EMPTY_TREE_HASH = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"  # pragma: allowlist secret
 
 
 def _run_git(repo_root: Path, args: list[str]) -> subprocess.CompletedProcess[str]:
