@@ -77,10 +77,9 @@ All agents must strictly follow these git hygiene rules:
 
 1. **Dedicated Feature Branches**:
    - Never commit directly to `main`. Create branches branching off of `origin/main` using the spec-kit naming pattern: `###-short-name` (e.g. `002-git-compliance`).
-2. **Git Commit Signing (Mandatory)**:
-   - All commits must have verified SSH signatures. Ensure your git configuration maps to:
-     - `gpg.format=ssh`
-     - `user.signingkey` pointing to the workspace `.ssh/*.pub` key (e.g. `C:\Users\bfoxt\.ssh\id_ed25519_vindicta.pub`).
+2. **Git Commit Signing (Local vs. Cloud Sandboxes)**:
+   - Local commits MUST have verified SSH signatures (`gpg.format=ssh`, `user.signingkey` pointing to `.ssh/*.pub`).
+   - Cloud/remote sandbox PRs without local SSH keys emit a CI warning on PRs and rely on GitHub's signed Squash & Merge onto `main` (which strictly enforces signed commits).
 3. **Git Isolation (Concurrency Safeguard)**:
    - **NEVER use `git add .` or `git commit -a`.**
    - You must only `git add` the explicit files you created or modified in the current task. This isolates concurrent agent work.
