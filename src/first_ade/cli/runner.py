@@ -1,3 +1,5 @@
+# implements: FR-001
+# traces_to: Π.3.1
 """Orchestration runner wiring domain guards and infrastructure adapters."""
 
 from __future__ import annotations

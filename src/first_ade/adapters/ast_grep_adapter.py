@@ -1,3 +1,5 @@
+# implements: FR-001
+# traces_to: Π.3.1
 """ast-grep adapter for ADE-AX-04 Execution Safety Hygiene."""
 
 from __future__ import annotations

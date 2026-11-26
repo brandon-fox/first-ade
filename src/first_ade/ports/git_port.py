@@ -1,3 +1,5 @@
+# implements: FR-001
+# traces_to: Π.3.1
 """Git diff port interface."""
 
 from __future__ import annotations

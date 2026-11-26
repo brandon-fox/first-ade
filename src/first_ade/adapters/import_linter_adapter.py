@@ -1,3 +1,5 @@
+# implements: FR-001
+# traces_to: Π.3.1
 """import-linter adapter for ADE-AX-02 Hexagonal Domain Purity."""
 
 from __future__ import annotations

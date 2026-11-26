@@ -1,3 +1,5 @@
+# implements: FR-001
+# traces_to: Π.3.1
 """Domain models for First-ADE invariants, diffs, and check results."""
 
 from __future__ import annotations

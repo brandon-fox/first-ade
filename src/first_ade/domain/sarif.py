@@ -1,3 +1,5 @@
+# implements: FR-001
+# traces_to: Π.3.1
 """OASIS SARIF 2.1.0 normalizer and serializer."""
 
 from __future__ import annotations
